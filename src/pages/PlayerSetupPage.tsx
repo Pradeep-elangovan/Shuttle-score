@@ -1,14 +1,22 @@
 import { useState } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { ArrowLeft, User, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Users, Shield } from 'lucide-react'
+import ColorPicker, { PRESET_COLORS } from '../components/ColorPicker'
+import PlayerAvatarUpload from '../components/PlayerAvatarUpload'
 
 export interface PlayerInfo {
+  id: string
   name: string
   gender: 'male' | 'female' | 'other' | ''
   dob: string
+  color: string
+  avatar?: string
 }
 
-const emptyPlayer = (): PlayerInfo => ({ name: '', gender: '', dob: '' })
+export interface TeamColors {
+  teamA: string
+  teamB: string
+}
 
 export default function PlayerSetupPage() {
   const navigate = useNavigate()
@@ -18,27 +26,70 @@ export default function PlayerSetupPage() {
   const isSingles = mode === 'singles'
   const playerCount = isSingles ? 2 : 4
 
-  const [players, setPlayers] = useState<PlayerInfo[]>(
-    Array.from({ length: playerCount }, emptyPlayer)
-  )
+  // Team colors for doubles (Team A: Red, Team B: Blue default)
+  const [teamColors, setTeamColors] = useState<TeamColors>({
+    teamA: PRESET_COLORS[0], // #ef4444
+    teamB: PRESET_COLORS[1], // #3b82f6
+  })
+
+  // Players state
+  const [players, setPlayers] = useState<PlayerInfo[]>(() => {
+    return Array.from({ length: playerCount }, (_, i) => {
+      let defaultColor: string
+      if (isSingles) {
+        defaultColor = i === 0 ? PRESET_COLORS[0] : PRESET_COLORS[1]
+      } else {
+        defaultColor = i < 2 ? PRESET_COLORS[0] : PRESET_COLORS[1]
+      }
+      return {
+        id: `player-${i + 1}`,
+        name: '',
+        gender: '',
+        dob: '',
+        color: defaultColor,
+      }
+    })
+  })
+
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const updatePlayer = (index: number, field: keyof PlayerInfo, value: string) => {
+  // Update a single field on a player
+  const updatePlayer = <K extends keyof PlayerInfo>(
+    index: number,
+    field: K,
+    value: PlayerInfo[K]
+  ) => {
     setPlayers((prev) => {
       const updated = [...prev]
       updated[index] = { ...updated[index], [field]: value }
       return updated
     })
-    // Clear error on edit
-    setErrors((prev) => {
-      const key = `${index}-${field}`
-      if (prev[key]) {
+
+    // Clear error
+    const key = `${index}-${String(field)}`
+    if (errors[key]) {
+      setErrors((prev) => {
         const next = { ...prev }
         delete next[key]
         return next
-      }
-      return prev
-    })
+      })
+    }
+  }
+
+  // Update team color in doubles
+  const handleTeamColorChange = (team: 'teamA' | 'teamB', newColor: string) => {
+    setTeamColors((prev) => ({ ...prev, [team]: newColor }))
+    setPlayers((prev) =>
+      prev.map((player, index) => {
+        if (team === 'teamA' && index < 2) {
+          return { ...player, color: newColor }
+        }
+        if (team === 'teamB' && index >= 2) {
+          return { ...player, color: newColor }
+        }
+        return player
+      })
+    )
   }
 
   const validate = (): boolean => {
@@ -54,24 +105,21 @@ export default function PlayerSetupPage() {
 
   const handleContinue = () => {
     if (!validate()) return
-    navigate(`/game/${gameId}/court`, { state: { mode, players } })
+    navigate(`/game/${gameId}/court`, {
+      state: {
+        mode,
+        players,
+        teamColors: isSingles ? undefined : teamColors,
+      },
+    })
   }
 
-  // Label helpers
   const getPlayerLabel = (index: number): string => {
     if (isSingles) {
       return index === 0 ? 'Player 1' : 'Player 2'
     }
-    // Doubles: Team A (0,1) and Team B (2,3)
     if (index < 2) return `Team A — Player ${index + 1}`
     return `Team B — Player ${index - 1}`
-  }
-
-  const getTeamHeader = (index: number): string | null => {
-    if (isSingles) return null
-    if (index === 0) return 'Team A'
-    if (index === 2) return 'Team B'
-    return null
   }
 
   const genderOptions: { value: PlayerInfo['gender']; label: string; icon: string }[] = [
@@ -87,46 +135,148 @@ export default function PlayerSetupPage() {
         <button
           onClick={() => navigate(-1)}
           className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center tap-scale hover:bg-surface-light transition-colors"
+          aria-label="Go back"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
           <h1 className="text-xl font-bold">Player Details</h1>
-          <p className="text-xs text-slate-400 capitalize">{mode} — {playerCount} players</p>
+          <p className="text-xs text-slate-400 capitalize">
+            {mode} — {playerCount} players
+          </p>
         </div>
       </header>
 
-      {/* Form */}
-      <main className="flex-1 overflow-y-auto px-5 py-4 space-y-5 pb-28">
+      {/* Main Form */}
+      <main className="flex-1 overflow-y-auto px-5 py-4 space-y-6 pb-28">
+        {/* DOUBLES: Team A Section */}
+        {!isSingles && (
+          <div className="bg-surface/80 rounded-2xl p-4 border border-slate-700/60 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shadow-md"
+                  style={{ backgroundColor: `${teamColors.teamA}25` }}
+                >
+                  <Shield className="w-4 h-4" style={{ color: teamColors.teamA }} />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-white">Team A</h2>
+                  <p className="text-[11px] text-slate-400">Players 1 & 2</p>
+                </div>
+              </div>
+              <span
+                className="w-4 h-4 rounded-full border border-white/20 shadow-sm"
+                style={{ backgroundColor: teamColors.teamA }}
+              />
+            </div>
+
+            <ColorPicker
+              label="Team A Color"
+              value={teamColors.teamA}
+              onChange={(c) => handleTeamColorChange('teamA', c)}
+            />
+          </div>
+        )}
+
+        {/* Players list */}
         {players.map((player, index) => {
-          const teamHeader = getTeamHeader(index)
+          // If doubles, show Team B header right before index 2
+          const showTeamBHeader = !isSingles && index === 2
+
           return (
-            <div key={index}>
-              {/* Team divider for doubles */}
-              {teamHeader && (
-                <div className="flex items-center gap-3 mb-4 mt-2">
-                  <div className="h-px flex-1 bg-slate-700" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-primary-light">
-                    {teamHeader}
-                  </span>
-                  <div className="h-px flex-1 bg-slate-700" />
+            <div key={player.id} className="space-y-4">
+              {showTeamBHeader && (
+                <div className="bg-surface/80 rounded-2xl p-4 border border-slate-700/60 space-y-4 mt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center shadow-md"
+                        style={{ backgroundColor: `${teamColors.teamB}25` }}
+                      >
+                        <Users className="w-4 h-4" style={{ color: teamColors.teamB }} />
+                      </div>
+                      <div>
+                        <h2 className="text-sm font-bold uppercase tracking-wider text-white">Team B</h2>
+                        <p className="text-[11px] text-slate-400">Players 3 & 4</p>
+                      </div>
+                    </div>
+                    <span
+                      className="w-4 h-4 rounded-full border border-white/20 shadow-sm"
+                      style={{ backgroundColor: teamColors.teamB }}
+                    />
+                  </div>
+
+                  <ColorPicker
+                    label="Team B Color"
+                    value={teamColors.teamB}
+                    onChange={(c) => handleTeamColorChange('teamB', c)}
+                  />
                 </div>
               )}
 
-              <div className="bg-surface rounded-2xl p-4 space-y-4 border border-slate-700/50">
-                {/* Player header */}
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
-                    <User className="w-4 h-4 text-primary-light" />
+              {/* Player Card */}
+              <div
+                className="bg-surface rounded-2xl p-4 space-y-4 border transition-all"
+                style={{
+                  borderColor: `${player.color}40`,
+                  boxShadow: `0 4px 20px -2px ${player.color}15`,
+                }}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs"
+                      style={{
+                        backgroundColor: `${player.color}25`,
+                        color: player.color,
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                    <span className="text-sm font-semibold text-slate-200">
+                      {getPlayerLabel(index)}
+                    </span>
                   </div>
-                  <span className="text-sm font-semibold text-slate-300">
-                    {getPlayerLabel(index)}
-                  </span>
+
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="w-3 h-3 rounded-full border border-white/20"
+                      style={{ backgroundColor: player.color }}
+                    />
+                  </div>
                 </div>
+
+                {/* Avatar / Photo Upload */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">
+                    Player Photo (Optional)
+                  </label>
+                  <PlayerAvatarUpload
+                    name={player.name}
+                    avatar={player.avatar}
+                    color={player.color}
+                    onAvatarChange={(avatar) => updatePlayer(index, 'avatar', avatar)}
+                  />
+                </div>
+
+                {/* Individual Color Picker (Singles only) */}
+                {isSingles && (
+                  <div className="pt-1">
+                    <ColorPicker
+                      label="Player Color"
+                      value={player.color}
+                      onChange={(c) => updatePlayer(index, 'color', c)}
+                    />
+                  </div>
+                )}
 
                 {/* Name */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Name</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                    Player Name *
+                  </label>
                   <input
                     type="text"
                     placeholder="Enter player name"
@@ -144,7 +294,9 @@ export default function PlayerSetupPage() {
 
                 {/* Gender */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Gender</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                    Gender *
+                  </label>
                   <div className="flex gap-2">
                     {genderOptions.map((opt) => (
                       <button
@@ -171,7 +323,7 @@ export default function PlayerSetupPage() {
                 {/* Date of Birth */}
                 <div>
                   <label className="block text-xs font-medium text-slate-400 mb-1.5">
-                    Date of Birth
+                    Date of Birth *
                   </label>
                   <input
                     type="date"
@@ -194,11 +346,11 @@ export default function PlayerSetupPage() {
       </main>
 
       {/* Sticky bottom CTA */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-bg via-bg/95 to-transparent pt-8">
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-bg via-bg/95 to-transparent pt-8 shrink-0">
         <button
           onClick={handleContinue}
           className="w-full bg-primary hover:bg-primary-light text-white font-semibold py-4 rounded-2xl 
-                     flex items-center justify-center gap-2 tap-scale transition-colors text-base shadow-lg shadow-primary/25"
+                     flex items-center justify-center gap-2 tap-scale transition-colors text-base shadow-lg shadow-primary/25 cursor-pointer"
         >
           Continue to Court
           <ChevronRight className="w-5 h-5" />
