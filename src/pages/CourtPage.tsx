@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { ArrowLeft, RotateCcw, ArrowUpDown, Eye, EyeOff, Layers, Smartphone, Monitor, Undo2 } from 'lucide-react'
+import { ArrowLeft, RotateCcw, ArrowUpDown, Layers, Smartphone, Monitor, Undo2 } from 'lucide-react'
 import BadmintonCourt, { type CourtTheme, type CourtOrientation } from '../components/BadmintonCourt'
 import type { PlayerInfo, TeamColors } from './PlayerSetupPage'
 
@@ -39,7 +39,6 @@ export default function CourtPage() {
 
   // Court custom state
   const [theme, setTheme] = useState<CourtTheme>('emerald')
-  const [showGuides, setShowGuides] = useState(true)
   const [isFlipped, setIsFlipped] = useState(false)
   const [servingPlayerId, setServingPlayerId] = useState<string | null>(
     players[0]?.id || null
@@ -269,20 +268,6 @@ export default function CourtPage() {
             <ArrowUpDown className="w-3.5 h-3.5" />
             Flip
           </button>
-
-          {/* Guide Overlay Toggle */}
-          <button
-            onClick={() => setShowGuides(!showGuides)}
-            className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-semibold flex items-center gap-1 tap-scale cursor-pointer transition-colors ${
-              showGuides
-                ? 'bg-primary/20 border-primary/50 text-primary-light'
-                : 'bg-surface/90 border-slate-700/60 text-slate-400 hover:bg-slate-700'
-            }`}
-            title="Toggle BWF measurement markings & Odd/Even guides"
-          >
-            {showGuides ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            Guides
-          </button>
         </div>
       </div>
 
@@ -320,7 +305,6 @@ export default function CourtPage() {
           teamColors={teamColors}
           theme={theme}
           orientation={effectiveOrientation}
-          showGuides={showGuides}
           isFlipped={isFlipped}
           servingPlayerId={servingPlayerId}
           onSelectServer={(id) => setServingPlayerId(id)}
