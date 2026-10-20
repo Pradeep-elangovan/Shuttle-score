@@ -12,7 +12,6 @@ interface BadmintonCourtProps {
   theme?: CourtTheme
   orientation?: CourtOrientation
   isFlipped?: boolean
-  servingPlayerId?: string | null
   onScoreSide?: (side: 'side1' | 'side2') => void
   activeTapSide?: 'side1' | 'side2' | null
 }
@@ -70,7 +69,6 @@ export default function BadmintonCourt({
   theme = 'emerald',
   orientation = 'portrait',
   isFlipped = false,
-  servingPlayerId,
   onScoreSide,
   activeTapSide,
 }: BadmintonCourtProps) {
@@ -239,9 +237,6 @@ export default function BadmintonCourt({
       }
     }
   }
-
-  const activeServer =
-    courtPlayers.find((cp) => cp.player.id === servingPlayerId) || courtPlayers[0]
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center relative select-none">
@@ -927,7 +922,6 @@ export default function BadmintonCourt({
         {/* ======================================================== */}
         {courtPlayers.map((cp) => {
           const { player, x, y, radius } = cp
-          const isServing = activeServer?.player.id === player.id
           const initials = getInitials(player.name, 'P')
           const pillWidth = Math.max(80, Math.min(140, (player.name.length || 6) * 10 + 24))
 
@@ -937,20 +931,6 @@ export default function BadmintonCourt({
               className="pointer-events-none"
               filter={`url(#tokenShadow-${uniqueId})`}
             >
-              {isServing && (
-                <circle
-                  cx={x}
-                  cy={y}
-                  r={radius + 8}
-                  fill="none"
-                  stroke="#fbbf24"
-                  strokeWidth="2.5"
-                  strokeDasharray="6 4"
-                  className="animate-spin"
-                  style={{ transformOrigin: `${x}px ${y}px`, animationDuration: '8s' }}
-                />
-              )}
-
               {player.avatar ? (
                 <>
                   <circle cx={x} cy={y} r={radius} fill="#1e293b" />
@@ -973,7 +953,7 @@ export default function BadmintonCourt({
                 cy={y}
                 r={radius}
                 fill="none"
-                stroke={isServing ? '#fbbf24' : player.color}
+                stroke={player.color}
                 strokeWidth="4"
               />
 
