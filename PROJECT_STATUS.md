@@ -81,6 +81,7 @@ shuttle-score/
 4. **Court Score Marking & Large Center Scoreboard (`/game/:gameId/court`)**:
    - **Clean Court & Non-Interfering Avatars**:
      - Player avatars now have `pointer-events-none`, meaning touches anywhere on or around the avatar directly register as a score for that side.
+     - Removed the spinning circle animation around avatars.
      - Removed the colored dot / touch point indicator and role labels from both avatars.
    - **Tap-to-Score on Court Sides**:
      - Tap anywhere on Side A (Top in portrait / Left in landscape) awards `+1` point to Side A.
