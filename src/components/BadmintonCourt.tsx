@@ -15,6 +15,8 @@ interface BadmintonCourtProps {
   isFlipped?: boolean
   servingPlayerId?: string | null
   onSelectServer?: (playerId: string) => void
+  onScoreSide?: (side: 'side1' | 'side2') => void
+  activeTapSide?: 'side1' | 'side2' | null
 }
 
 interface ThemePalette {
@@ -73,6 +75,8 @@ export default function BadmintonCourt({
   isFlipped = false,
   servingPlayerId,
   onSelectServer,
+  onScoreSide,
+  activeTapSide,
 }: BadmintonCourtProps) {
   const [selectedZoneInfo, setSelectedZoneInfo] = useState<{
     id: string
@@ -134,7 +138,6 @@ export default function BadmintonCourt({
   const courtPlayers: CourtPlayer[] = []
 
   if (isLandscape) {
-    // LANDSCAPE: Net is at X = 670, dividing Left (Side 1) and Right (Side 2)
     const leftCenterServiceX = backBoxDepth + (netPosition - shortServiceLineDist - backBoxDepth) / 2 // ~274
     const rightCenterServiceX = netPosition + shortServiceLineDist + (fullLength - backBoxDepth - (netPosition + shortServiceLineDist)) / 2 // ~1066
 
@@ -143,7 +146,7 @@ export default function BadmintonCourt({
         courtPlayers.push({
           player: side1Players[0],
           x: leftCenterServiceX,
-          y: fullBreadth / 2, // 305
+          y: fullBreadth / 2,
           radius: 46,
           roleLabel: isFlipped ? 'Side B' : 'Side A',
         })
@@ -158,12 +161,11 @@ export default function BadmintonCourt({
         })
       }
     } else {
-      // Doubles Landscape: Left & Right service boxes are Top (Odd) & Bottom (Even) on each side
       if (side1Players[0]) {
         courtPlayers.push({
           player: side1Players[0],
           x: leftCenterServiceX,
-          y: fullBreadth * 0.73, // Bottom / Even
+          y: fullBreadth * 0.73,
           radius: 40,
           roleLabel: 'Right / Even',
         })
@@ -172,7 +174,7 @@ export default function BadmintonCourt({
         courtPlayers.push({
           player: side1Players[1],
           x: leftCenterServiceX,
-          y: fullBreadth * 0.27, // Top / Odd
+          y: fullBreadth * 0.27,
           radius: 40,
           roleLabel: 'Left / Odd',
         })
@@ -182,7 +184,7 @@ export default function BadmintonCourt({
         courtPlayers.push({
           player: side2Players[0],
           x: rightCenterServiceX,
-          y: fullBreadth * 0.27, // Top / Odd
+          y: fullBreadth * 0.27,
           radius: 40,
           roleLabel: 'Left / Odd',
         })
@@ -191,14 +193,13 @@ export default function BadmintonCourt({
         courtPlayers.push({
           player: side2Players[1],
           x: rightCenterServiceX,
-          y: fullBreadth * 0.73, // Bottom / Even
+          y: fullBreadth * 0.73,
           radius: 40,
           roleLabel: 'Right / Even',
         })
       }
     }
   } else {
-    // PORTRAIT: Net is at Y = 670, dividing Top (Side 1) and Bottom (Side 2)
     const topCenterServiceY = backBoxDepth + (netPosition - shortServiceLineDist - backBoxDepth) / 2 // ~274
     const bottomCenterServiceY = netPosition + shortServiceLineDist + (fullLength - backBoxDepth - (netPosition + shortServiceLineDist)) / 2 // ~1066
 
@@ -222,7 +223,6 @@ export default function BadmintonCourt({
         })
       }
     } else {
-      // Doubles Portrait: Left & Right service boxes
       if (side1Players[0]) {
         courtPlayers.push({
           player: side1Players[0],
@@ -524,6 +524,34 @@ export default function BadmintonCourt({
         )}
 
         {/* ======================================================== */}
+        {/* TAP FLASH OVERLAYS ON COURT TAP                          */}
+        {/* ======================================================== */}
+        {activeTapSide === 'side1' && (
+          <rect
+            x="0"
+            y="0"
+            width={isLandscape ? netPosition : courtW}
+            height={isLandscape ? courtH : netPosition}
+            fill={side1Color}
+            opacity="0.35"
+            pointerEvents="none"
+            className="court-tap-flash"
+          />
+        )}
+        {activeTapSide === 'side2' && (
+          <rect
+            x={isLandscape ? netPosition : 0}
+            y={isLandscape ? 0 : netPosition}
+            width={isLandscape ? fullLength - netPosition : courtW}
+            height={isLandscape ? courtH : fullLength - netPosition}
+            fill={side2Color}
+            opacity="0.35"
+            pointerEvents="none"
+            className="court-tap-flash"
+          />
+        )}
+
+        {/* ======================================================== */}
         {/* 3. THE BACK BOXES (0.76m Rear Service Alleys)            */}
         {/* ======================================================== */}
         {isLandscape ? (
@@ -531,7 +559,8 @@ export default function BadmintonCourt({
             {/* Left Back Box (x = 0 to 76) */}
             <g
               className="cursor-pointer"
-              onClick={() =>
+              onClick={(e) => {
+                e.stopPropagation()
                 setSelectedZoneInfo({
                   id: 'left-back-box',
                   title: 'Left Back Box / Rear Gallery (0.76m)',
@@ -540,7 +569,7 @@ export default function BadmintonCourt({
                       ? 'In Doubles: OUT for service (fault). IN during rallies.'
                       : 'In Singles: IN for both service and rallies (singles back service boundary is outer baseline).',
                 })
-              }
+              }}
             >
               <rect
                 x="0"
@@ -556,7 +585,8 @@ export default function BadmintonCourt({
             {/* Right Back Box (x = 1264 to 1340) */}
             <g
               className="cursor-pointer"
-              onClick={() =>
+              onClick={(e) => {
+                e.stopPropagation()
                 setSelectedZoneInfo({
                   id: 'right-back-box',
                   title: 'Right Back Box / Rear Gallery (0.76m)',
@@ -565,7 +595,7 @@ export default function BadmintonCourt({
                       ? 'In Doubles: OUT for service (fault). IN during rallies.'
                       : 'In Singles: IN for both service and rallies (singles back service boundary is outer baseline).',
                 })
-              }
+              }}
             >
               <rect
                 x={fullLength - backBoxDepth}
@@ -601,7 +631,8 @@ export default function BadmintonCourt({
             {/* Top Back Box (y = 0 to 76) */}
             <g
               className="cursor-pointer"
-              onClick={() =>
+              onClick={(e) => {
+                e.stopPropagation()
                 setSelectedZoneInfo({
                   id: 'top-back-box',
                   title: 'Top Back Box / Rear Gallery (0.76m)',
@@ -610,7 +641,7 @@ export default function BadmintonCourt({
                       ? 'In Doubles: OUT for service (fault). IN during rallies.'
                       : 'In Singles: IN for both service and rallies (singles back service boundary is outer baseline).',
                 })
-              }
+              }}
             >
               <rect
                 x="0"
@@ -626,7 +657,8 @@ export default function BadmintonCourt({
             {/* Bottom Back Box (y = 1264 to 1340) */}
             <g
               className="cursor-pointer"
-              onClick={() =>
+              onClick={(e) => {
+                e.stopPropagation()
                 setSelectedZoneInfo({
                   id: 'bottom-back-box',
                   title: 'Bottom Back Box / Rear Gallery (0.76m)',
@@ -635,7 +667,7 @@ export default function BadmintonCourt({
                       ? 'In Doubles: OUT for service (fault). IN during rallies.'
                       : 'In Singles: IN for both service and rallies (singles back service boundary is outer baseline).',
                 })
-              }
+              }}
             >
               <rect
                 x="0"
@@ -671,7 +703,6 @@ export default function BadmintonCourt({
         {/* ======================================================== */}
         {/* 4. OFFICIAL BWF REGULATION COURT LINES                   */}
         {/* ======================================================== */}
-        {/* Outer Boundary Box */}
         <rect
           x="0"
           y="0"
@@ -862,56 +893,11 @@ export default function BadmintonCourt({
                     stroke={mode === 'doubles' ? '#ef4444' : '#10b981'}
                     strokeWidth="1.5"
                   />
-                  <text
-                    x="0"
-                    y="-45"
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="10"
-                    fontWeight="bold"
-                  >
-                    BACK
-                  </text>
-                  <text
-                    x="0"
-                    y="-30"
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="10"
-                    fontWeight="bold"
-                  >
-                    BOX
-                  </text>
-                  <text
-                    x="0"
-                    y="-15"
-                    textAnchor="middle"
-                    fill={mode === 'doubles' ? '#f87171' : '#34d399'}
-                    fontSize="9"
-                    fontWeight="bold"
-                  >
-                    0.76M
-                  </text>
-                  <text
-                    x="0"
-                    y="15"
-                    textAnchor="middle"
-                    fill="rgba(255,255,255,0.7)"
-                    fontSize="9"
-                    fontWeight="600"
-                  >
-                    {mode === 'doubles' ? 'OUT' : 'IN'}
-                  </text>
-                  <text
-                    x="0"
-                    y="30"
-                    textAnchor="middle"
-                    fill="rgba(255,255,255,0.7)"
-                    fontSize="9"
-                    fontWeight="600"
-                  >
-                    {mode === 'doubles' ? 'SERVE' : 'SERVE'}
-                  </text>
+                  <text x="0" y="-45" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">BACK</text>
+                  <text x="0" y="-30" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">BOX</text>
+                  <text x="0" y="-15" textAnchor="middle" fill={mode === 'doubles' ? '#f87171' : '#34d399'} fontSize="9" fontWeight="bold">0.76M</text>
+                  <text x="0" y="15" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="9" fontWeight="600">{mode === 'doubles' ? 'OUT' : 'IN'}</text>
+                  <text x="0" y="30" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="9" fontWeight="600">{mode === 'doubles' ? 'SERVE' : 'SERVE'}</text>
                 </g>
 
                 {/* Right Back Box Badge */}
@@ -927,127 +913,20 @@ export default function BadmintonCourt({
                     stroke={mode === 'doubles' ? '#ef4444' : '#10b981'}
                     strokeWidth="1.5"
                   />
-                  <text
-                    x="0"
-                    y="-45"
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="10"
-                    fontWeight="bold"
-                  >
-                    BACK
-                  </text>
-                  <text
-                    x="0"
-                    y="-30"
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="10"
-                    fontWeight="bold"
-                  >
-                    BOX
-                  </text>
-                  <text
-                    x="0"
-                    y="-15"
-                    textAnchor="middle"
-                    fill={mode === 'doubles' ? '#f87171' : '#34d399'}
-                    fontSize="9"
-                    fontWeight="bold"
-                  >
-                    0.76M
-                  </text>
-                  <text
-                    x="0"
-                    y="15"
-                    textAnchor="middle"
-                    fill="rgba(255,255,255,0.7)"
-                    fontSize="9"
-                    fontWeight="600"
-                  >
-                    {mode === 'doubles' ? 'OUT' : 'IN'}
-                  </text>
-                  <text
-                    x="0"
-                    y="30"
-                    textAnchor="middle"
-                    fill="rgba(255,255,255,0.7)"
-                    fontSize="9"
-                    fontWeight="600"
-                  >
-                    {mode === 'doubles' ? 'SERVE' : 'SERVE'}
-                  </text>
+                  <text x="0" y="-45" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">BACK</text>
+                  <text x="0" y="-30" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">BOX</text>
+                  <text x="0" y="-15" textAnchor="middle" fill={mode === 'doubles' ? '#f87171' : '#34d399'} fontSize="9" fontWeight="bold">0.76M</text>
+                  <text x="0" y="15" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="9" fontWeight="600">{mode === 'doubles' ? 'OUT' : 'IN'}</text>
+                  <text x="0" y="30" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="9" fontWeight="600">{mode === 'doubles' ? 'SERVE' : 'SERVE'}</text>
                 </g>
 
-                {/* Non-Service Zone Labels */}
-                <text
-                  x={netPosition - shortServiceLineDist / 2}
-                  y={courtH / 2}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.4)"
-                  fontSize="12"
-                  fontWeight="bold"
-                  letterSpacing="0.1em"
-                  transform={`rotate(-90 ${netPosition - shortServiceLineDist / 2} ${courtH / 2})`}
-                >
-                  NON-SERVICE ZONE (1.98M)
-                </text>
-                <text
-                  x={netPosition + shortServiceLineDist / 2}
-                  y={courtH / 2}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.4)"
-                  fontSize="12"
-                  fontWeight="bold"
-                  letterSpacing="0.1em"
-                  transform={`rotate(90 ${netPosition + shortServiceLineDist / 2} ${courtH / 2})`}
-                >
-                  NON-SERVICE ZONE (1.98M)
-                </text>
-
                 {/* Left Side Service Box Labels */}
-                <text
-                  x={netPosition - shortServiceLineDist - 30}
-                  y={courtH * 0.74}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.55)"
-                  fontSize="13"
-                  fontWeight="bold"
-                >
-                  RIGHT (EVEN)
-                </text>
-                <text
-                  x={netPosition - shortServiceLineDist - 30}
-                  y={courtH * 0.26}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.55)"
-                  fontSize="13"
-                  fontWeight="bold"
-                >
-                  LEFT (ODD)
-                </text>
+                <text x={netPosition - shortServiceLineDist - 30} y={courtH * 0.74} textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="13" fontWeight="bold">RIGHT (EVEN)</text>
+                <text x={netPosition - shortServiceLineDist - 30} y={courtH * 0.26} textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="13" fontWeight="bold">LEFT (ODD)</text>
 
                 {/* Right Side Service Box Labels */}
-                <text
-                  x={netPosition + shortServiceLineDist + 30}
-                  y={courtH * 0.26}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.55)"
-                  fontSize="13"
-                  fontWeight="bold"
-                >
-                  RIGHT (EVEN)
-                </text>
-                <text
-                  x={netPosition + shortServiceLineDist + 30}
-                  y={courtH * 0.74}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.55)"
-                  fontSize="13"
-                  fontWeight="bold"
-                >
-                  LEFT (ODD)
-                </text>
+                <text x={netPosition + shortServiceLineDist + 30} y={courtH * 0.26} textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="13" fontWeight="bold">RIGHT (EVEN)</text>
+                <text x={netPosition + shortServiceLineDist + 30} y={courtH * 0.74} textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="13" fontWeight="bold">LEFT (ODD)</text>
               </>
             ) : (
               <>
@@ -1065,15 +944,7 @@ export default function BadmintonCourt({
                     strokeWidth="1.5"
                   />
                   <circle cx="-106" cy="0" r="4.5" fill={mode === 'doubles' ? '#ef4444' : '#10b981'} />
-                  <text
-                    x="6"
-                    y="3.5"
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="11"
-                    fontWeight="bold"
-                    letterSpacing="0.06em"
-                  >
+                  <text x="6" y="3.5" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold" letterSpacing="0.06em">
                     {mode === 'doubles' ? 'BACK BOX (0.76M) • OUT ON SERVE' : 'BACK BOX (0.76M) • IN'}
                   </text>
                 </g>
@@ -1092,96 +963,78 @@ export default function BadmintonCourt({
                     strokeWidth="1.5"
                   />
                   <circle cx="-106" cy="0" r="4.5" fill={mode === 'doubles' ? '#ef4444' : '#10b981'} />
-                  <text
-                    x="6"
-                    y="3.5"
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="11"
-                    fontWeight="bold"
-                    letterSpacing="0.06em"
-                  >
+                  <text x="6" y="3.5" textAnchor="middle" fill="white" fontSize="11" fontWeight="bold" letterSpacing="0.06em">
                     {mode === 'doubles' ? 'BACK BOX (0.76M) • OUT ON SERVE' : 'BACK BOX (0.76M) • IN'}
                   </text>
                 </g>
 
-                {/* Non-Service Zone Labels */}
-                <text
-                  x={courtW / 2}
-                  y={netPosition - shortServiceLineDist / 2}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.4)"
-                  fontSize="12"
-                  fontWeight="bold"
-                  letterSpacing="0.1em"
-                >
-                  NON-SERVICE ZONE (1.98M)
-                </text>
-                <text
-                  x={courtW / 2}
-                  y={netPosition + shortServiceLineDist / 2}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.4)"
-                  fontSize="12"
-                  fontWeight="bold"
-                  letterSpacing="0.1em"
-                >
-                  NON-SERVICE ZONE (1.98M)
-                </text>
-
                 {/* Service Box Indicators */}
-                <text
-                  x={courtW * 0.25}
-                  y={netPosition - shortServiceLineDist - 24}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.55)"
-                  fontSize="13"
-                  fontWeight="bold"
-                >
-                  RIGHT (EVEN)
-                </text>
-                <text
-                  x={courtW * 0.75}
-                  y={netPosition - shortServiceLineDist - 24}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.55)"
-                  fontSize="13"
-                  fontWeight="bold"
-                >
-                  LEFT (ODD)
-                </text>
+                <text x={courtW * 0.25} y={netPosition - shortServiceLineDist - 24} textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="13" fontWeight="bold">RIGHT (EVEN)</text>
+                <text x={courtW * 0.75} y={netPosition - shortServiceLineDist - 24} textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="13" fontWeight="bold">LEFT (ODD)</text>
 
-                <text
-                  x={courtW * 0.25}
-                  y={netPosition + shortServiceLineDist + 34}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.55)"
-                  fontSize="13"
-                  fontWeight="bold"
-                >
-                  LEFT (ODD)
-                </text>
-                <text
-                  x={courtW * 0.75}
-                  y={netPosition + shortServiceLineDist + 34}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.55)"
-                  fontSize="13"
-                  fontWeight="bold"
-                >
-                  RIGHT (EVEN)
-                </text>
+                <text x={courtW * 0.25} y={netPosition + shortServiceLineDist + 34} textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="13" fontWeight="bold">LEFT (ODD)</text>
+                <text x={courtW * 0.75} y={netPosition + shortServiceLineDist + 34} textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="13" fontWeight="bold">RIGHT (EVEN)</text>
               </>
             )}
           </g>
         )}
 
         {/* ======================================================== */}
-        {/* 6. REALISTIC 3D NET WITH POSTS & TENSION CORDS           */}
+        {/* 6. TAP-TO-SCORE HIT AREAS ON COURT HALVES                */}
+        {/* ======================================================== */}
+        {isLandscape ? (
+          <>
+            {/* Left Court Half Tap Target */}
+            <rect
+              x="0"
+              y="0"
+              width={netPosition}
+              height={courtH}
+              fill="transparent"
+              className="cursor-pointer"
+              onClick={() => onScoreSide?.('side1')}
+            />
+            {/* Right Court Half Tap Target */}
+            <rect
+              x={netPosition}
+              y="0"
+              width={fullLength - netPosition}
+              height={courtH}
+              fill="transparent"
+              className="cursor-pointer"
+              onClick={() => onScoreSide?.('side2')}
+            />
+          </>
+        ) : (
+          <>
+            {/* Top Court Half Tap Target */}
+            <rect
+              x="0"
+              y="0"
+              width={courtW}
+              height={netPosition}
+              fill="transparent"
+              className="cursor-pointer"
+              onClick={() => onScoreSide?.('side1')}
+            />
+            {/* Bottom Court Half Tap Target */}
+            <rect
+              x="0"
+              y={netPosition}
+              width={courtW}
+              height={fullLength - netPosition}
+              fill="transparent"
+              className="cursor-pointer"
+              onClick={() => onScoreSide?.('side2')}
+            />
+          </>
+        )}
+
+        {/* ======================================================== */}
+        {/* 7. REALISTIC 3D NET WITH POSTS & TENSION CORDS           */}
         {/* ======================================================== */}
         {isLandscape ? (
           <g filter={`url(#netShadow-${uniqueId})`}>
-            {/* Vertical Net Mesh Body in Landscape (spanning from y=-20 to y=630) */}
             <rect
               x={netPosition - 12}
               y="-20"
@@ -1190,7 +1043,6 @@ export default function BadmintonCourt({
               fill={`url(#netMesh-${uniqueId})`}
               rx="1"
             />
-            {/* White Top Cord Tape */}
             <rect
               x={netPosition - 2}
               y="-20"
@@ -1199,59 +1051,30 @@ export default function BadmintonCourt({
               fill="#ffffff"
               rx="1"
             />
-            {/* Left tape border */}
-            <line
-              x1={netPosition - 12}
-              y1="-20"
-              x2={netPosition - 12}
-              y2={courtH + 20}
-              stroke="rgba(255,255,255,0.7)"
-              strokeWidth="1.5"
-            />
-            {/* Right tape border */}
-            <line
-              x1={netPosition + 12}
-              y1="-20"
-              x2={netPosition + 12}
-              y2={courtH + 20}
-              stroke="rgba(255,255,255,0.7)"
-              strokeWidth="1.5"
-            />
+            <line x1={netPosition - 12} y1="-20" x2={netPosition - 12} y2={courtH + 20} stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" />
+            <line x1={netPosition + 12} y1="-20" x2={netPosition + 12} y2={courtH + 20} stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" />
 
-            {/* Top Steel Post */}
             <g transform={`translate(${netPosition}, -8)`}>
               <ellipse cx="0" cy="5" rx="7" ry="3" fill="rgba(0,0,0,0.5)" />
               <rect x="-18" y="-6" width="36" height="12" rx="3" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
               <circle cx="-18" cy="0" r="5" fill="#e2e8f0" stroke="#475569" strokeWidth="1" />
             </g>
 
-            {/* Bottom Steel Post */}
             <g transform={`translate(${netPosition}, ${courtH + 8})`}>
               <ellipse cx="0" cy="5" rx="7" ry="3" fill="rgba(0,0,0,0.5)" />
               <rect x="-18" y="-6" width="36" height="12" rx="3" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
               <circle cx="18" cy="0" r="5" fill="#e2e8f0" stroke="#475569" strokeWidth="1" />
             </g>
 
-            {/* Net Center Measurement Badge */}
             <g transform={`translate(${netPosition}, ${courtH / 2})`}>
               <rect x="-7" y="-38" width="14" height="76" rx="7" fill="#0f172a" stroke="#ffffff" strokeWidth="1" />
-              <text
-                x="0"
-                y="0"
-                textAnchor="middle"
-                dominantBaseline="central"
-                fill="#ffffff"
-                fontSize="9"
-                fontWeight="bold"
-                transform={`rotate(-90 0 0)`}
-              >
+              <text x="0" y="0" textAnchor="middle" dominantBaseline="central" fill="#ffffff" fontSize="9" fontWeight="bold" transform="rotate(-90 0 0)">
                 NET • 1.524M
               </text>
             </g>
           </g>
         ) : (
           <g filter={`url(#netShadow-${uniqueId})`}>
-            {/* Horizontal Net Mesh Body in Portrait */}
             <rect
               x="-20"
               y={netPosition - 12}
@@ -1268,38 +1091,21 @@ export default function BadmintonCourt({
               fill="#ffffff"
               rx="1"
             />
-            <line
-              x1="-20"
-              y1={netPosition - 10.5}
-              x2={courtW + 20}
-              y2={netPosition - 10.5}
-              stroke="#94a3b8"
-              strokeWidth="0.8"
-            />
-            <line
-              x1="-20"
-              y1={netPosition + 12}
-              x2={courtW + 20}
-              y2={netPosition + 12}
-              stroke="rgba(255,255,255,0.7)"
-              strokeWidth="1.5"
-            />
+            <line x1="-20" y1={netPosition - 10.5} x2={courtW + 20} y2={netPosition - 10.5} stroke="#94a3b8" strokeWidth="0.8" />
+            <line x1="-20" y1={netPosition + 12} x2={courtW + 20} y2={netPosition + 12} stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" />
 
-            {/* Left Steel Post */}
             <g transform={`translate(-8, ${netPosition})`}>
               <ellipse cx="0" cy="5" rx="7" ry="3" fill="rgba(0,0,0,0.5)" />
               <rect x="-6" y="-18" width="12" height="36" rx="3" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
               <circle cx="0" cy="-18" r="5" fill="#e2e8f0" stroke="#475569" strokeWidth="1" />
             </g>
 
-            {/* Right Steel Post */}
             <g transform={`translate(${courtW + 8}, ${netPosition})`}>
               <ellipse cx="0" cy="5" rx="7" ry="3" fill="rgba(0,0,0,0.5)" />
               <rect x="-6" y="-18" width="12" height="36" rx="3" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
               <circle cx="0" cy="-18" r="5" fill="#e2e8f0" stroke="#475569" strokeWidth="1" />
             </g>
 
-            {/* Net Center Measurement Badge */}
             <g transform={`translate(${courtW / 2}, ${netPosition})`}>
               <rect x="-38" y="-7" width="76" height="14" rx="7" fill="#0f172a" stroke="#ffffff" strokeWidth="1" />
               <text x="0" y="3" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold">
@@ -1310,11 +1116,10 @@ export default function BadmintonCourt({
         )}
 
         {/* ======================================================== */}
-        {/* 7. BROADCAST END LABELS / TEAM BANNERS                   */}
+        {/* 8. BROADCAST END LABELS / TEAM BANNERS                   */}
         {/* ======================================================== */}
         {isLandscape ? (
           <>
-            {/* Left Side Banner (on apron) */}
             <g transform={`translate(-28, ${courtH / 2})`}>
               <rect
                 x="-14"
@@ -1336,7 +1141,7 @@ export default function BadmintonCourt({
                 fontSize="11"
                 fontWeight="bold"
                 letterSpacing="0.1em"
-                transform={`rotate(-90 0 5)`}
+                transform="rotate(-90 0 5)"
               >
                 {isFlipped
                   ? mode === 'singles' ? 'SIDE B (RIGHT)' : 'TEAM B'
@@ -1344,7 +1149,6 @@ export default function BadmintonCourt({
               </text>
             </g>
 
-            {/* Right Side Banner (on apron) */}
             <g transform={`translate(${courtW + 28}, ${courtH / 2})`}>
               <rect
                 x="-14"
@@ -1366,7 +1170,7 @@ export default function BadmintonCourt({
                 fontSize="11"
                 fontWeight="bold"
                 letterSpacing="0.1em"
-                transform={`rotate(90 0 5)`}
+                transform="rotate(90 0 5)"
               >
                 {isFlipped
                   ? mode === 'singles' ? 'SIDE A (LEFT)' : 'TEAM A'
@@ -1376,7 +1180,6 @@ export default function BadmintonCourt({
           </>
         ) : (
           <>
-            {/* Top Side Banner */}
             <g transform={`translate(${courtW / 2}, -24)`}>
               <rect
                 x="-110"
@@ -1390,22 +1193,13 @@ export default function BadmintonCourt({
                 filter="drop-shadow(0 4px 6px rgba(0,0,0,0.4))"
               />
               <circle cx="-92" cy="0" r="5" fill={side1Color} />
-              <text
-                x="-4"
-                y="4"
-                textAnchor="middle"
-                fill="white"
-                fontSize="12"
-                fontWeight="bold"
-                letterSpacing="0.1em"
-              >
+              <text x="-4" y="4" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold" letterSpacing="0.1em">
                 {isFlipped
                   ? mode === 'singles' ? 'SIDE B (BOTTOM)' : 'TEAM B'
                   : mode === 'singles' ? 'SIDE A (TOP)' : 'TEAM A'}
               </text>
             </g>
 
-            {/* Bottom Side Banner */}
             <g transform={`translate(${courtW / 2}, ${courtH + 24})`}>
               <rect
                 x="-110"
@@ -1419,15 +1213,7 @@ export default function BadmintonCourt({
                 filter="drop-shadow(0 4px 6px rgba(0,0,0,0.4))"
               />
               <circle cx="-92" cy="0" r="5" fill={side2Color} />
-              <text
-                x="-4"
-                y="4"
-                textAnchor="middle"
-                fill="white"
-                fontSize="12"
-                fontWeight="bold"
-                letterSpacing="0.1em"
-              >
+              <text x="-4" y="4" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold" letterSpacing="0.1em">
                 {isFlipped
                   ? mode === 'singles' ? 'SIDE A (TOP)' : 'TEAM A'
                   : mode === 'singles' ? 'SIDE B (BOTTOM)' : 'TEAM B'}
@@ -1437,7 +1223,7 @@ export default function BadmintonCourt({
         )}
 
         {/* ======================================================== */}
-        {/* 8. PLAYER TOKENS & SERVING BADGES                        */}
+        {/* 9. PLAYER TOKENS & SERVING BADGES                        */}
         {/* ======================================================== */}
         {courtPlayers.map((cp) => {
           const { player, x, y, radius, roleLabel } = cp
@@ -1523,20 +1309,12 @@ export default function BadmintonCourt({
               {isServing && (
                 <g transform={`translate(${x + radius - 4}, ${y - radius + 4})`}>
                   <circle cx="0" cy="0" r="13" fill="#fbbf24" stroke="#ffffff" strokeWidth="2" />
-                  <text
-                    x="0"
-                    y="3.5"
-                    textAnchor="middle"
-                    fill="#0f172a"
-                    fontSize="11"
-                    fontWeight="bold"
-                  >
+                  <text x="0" y="3.5" textAnchor="middle" fill="#0f172a" fontSize="11" fontWeight="bold">
                     🏸
                   </text>
                 </g>
               )}
 
-              {/* Name Pill Badge positioned below avatar */}
               <g transform={`translate(${x}, ${y + radius + 18})`}>
                 <rect
                   x={-pillWidth / 2}
@@ -1564,7 +1342,6 @@ export default function BadmintonCourt({
                 </text>
               </g>
 
-              {/* Role Subtitle */}
               <g transform={`translate(${x}, ${y + radius + 38})`}>
                 <text
                   x="0"

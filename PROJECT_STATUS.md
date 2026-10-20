@@ -9,7 +9,7 @@
 - **App Name:** Shuttle Score
 - **GitHub Repository:** [https://github.com/Pradeep-elangovan/Shuttle-score](https://github.com/Pradeep-elangovan/Shuttle-score)
 - **Local Directory:** `D:\My Works\Development\shuttle-score`
-- **Goal:** Mobile & tablet-first scoreboard web app with an adaptive landscape/portrait tournament-grade interactive court UI, intended to be wrapped and distributed as an Android APK (via Capacitor) on the Google Play Store. Future roadmap includes scaling to other racket/ball sports.
+- **Goal:** Mobile & tablet-first scoreboard web app with an adaptive landscape/portrait tournament-grade interactive court UI, tap-to-score marking, central broadcast scoreboard, and undo capabilities. Intended to be wrapped and distributed as an Android APK (via Capacitor) on the Google Play Store. Future roadmap includes scaling to other racket/ball sports.
 
 ---
 
@@ -31,7 +31,7 @@
 flowchart TD
     A["🏠 HomePage ('/')\nSelect Game: Badminton active, others upcoming"] --> B["🎮 GameModePage ('/game/:gameId/mode')\nChoose Singles (1v1) or Doubles (2v2)"]
     B --> C["📝 PlayerSetupPage ('/game/:gameId/players')\n• Singles: 2 players, custom color picker & photo upload per player\n• Doubles: Team A & B color pickers, photo upload per player"]
-    C --> D["🏸 CourtPage ('/game/:gameId/court')\n• Dynamic Aspect-Ratio Detection: Landscape on widescreen, Portrait on tall screens\n• 4 Themes: Emerald, Olympic Blue, Timber Hardwood, Midnight\n• Prominent 0.76m Back Boxes on both ends with Singles/Doubles rules\n• Realistic 3D Net with Steel Posts, 75mm Tape & Shadows\n• Odd/Even Service Box Guides & Non-Service 1.98m Zone\n• Active Server HUD with 🏸 Gold Shuttlecock Badge\n• Flip Ends & Orientation Toggle (Auto/Lock)"]
+    C --> D["🏸 CourtPage ('/game/:gameId/court')\n• Tap court side to score: Side A (+1) / Side B (+1)\n• Large Central Scoreboard: Frosted acrylic stadium HUD with digital digits\n• Undo up to last 1 point (↩ Undo Last Pt)\n• Adaptive Orientation: Landscape on widescreen, Portrait on tall screens\n• 4 Themes: Emerald, Olympic Blue, Timber Hardwood, Midnight\n• BWF 0.76m Back Boxes, 3D Net, Serving HUD, Flip Ends"]
 ```
 
 ---
@@ -50,14 +50,14 @@ shuttle-score/
 └── src/
     ├── main.tsx                       # Entry point wrapped in BrowserRouter
     ├── App.tsx                        # Unconstrained full-screen wrapper for Court, centered card for setup
-    ├── index.css                      # Tailwind base, dark palette tokens, tap-scale, float animations
+    ├── index.css                      # Tailwind base, dark palette tokens, score animations, float-up badges
     ├── pages/
     │   ├── HomePage.tsx               # Game card selector (Badminton available; TT, Tennis, Volleyball 'Soon')
     │   ├── GameModePage.tsx           # Singles (1v1) & Doubles (2v2) mode cards
     │   ├── PlayerSetupPage.tsx        # Player details form with ColorPicker & PlayerAvatarUpload
-    │   └── CourtPage.tsx              # Court wrapper with Aspect-Ratio detection, Landscape/Portrait toggle & HUD
+    │   └── CourtPage.tsx              # Court wrapper with Tap-to-Score, Large Central Scoreboard & 1-Point Undo
     ├── components/
-    │   ├── BadmintonCourt.tsx         # Responsive SVG court: Full Landscape (1340x610) & Portrait (610x1340) engines
+    │   ├── BadmintonCourt.tsx         # Responsive SVG court: Tap zones for scoring, 4 themes, Back Boxes, 3D net
     │   ├── ColorPicker.tsx            # 8 vibrant preset swatches + native HTML5 color picker
     │   ├── PlayerAvatarUpload.tsx     # Photo uploader with preview, canvas resize & remove button
     │   └── icons/
@@ -78,31 +78,25 @@ shuttle-score/
    - **Singles**: 2 players with individual color picker (8 sports presets + custom picker) & photo uploader.
    - **Doubles**: Team A & Team B color pickers, individual photo uploader, Name, Gender, and DOB for each of the 4 players.
    - Client-side image compression keeps photos lightweight (~30KB JPEG).
-4. **Adaptive Landscape & Portrait Badminton Court (`/game/:gameId/court`)**:
-   - **Dynamic Orientation Detection**:
-     - **Higher Width (Widescreen, Desktop, Tablet Landscape, Sideways Phone)**: Automatically switches to **Landscape Mode** (`1340 × 610`), horizontal court with vertical net in the center dividing Left (Side A) and Right (Side B).
-     - **Higher Height (Mobile Portrait, Tablet Portrait)**: Automatically switches to **Portrait Mode** (`610 × 1340`), vertical court with horizontal net dividing Top and Bottom.
-     - **Orientation Button**: Allows cycling/locking between `Auto`, `Landscape`, and `Portrait`.
-   - **Prominent 0.76m Back Boxes (Rear Gallery)**:
-     - The doubles long service line is **always drawn** on both ends in all modes.
-     - Divided by the center line into Left Back Box and Right Back Box.
-     - In Doubles: Displays `BACK BOX (0.76M) • OUT ON SERVE` with diagonal hazard/warning striping.
-     - In Singles: Displays `BACK BOX (0.76M) • IN`.
-     - Tapping any back box displays a rule explainer card.
-   - **4 Authentic Court Themes**:
-     - 🟢 **Emerald**: Classic Yonex BWF World Tour green mat
-     - 🔵 **Olympic**: Deep ocean turquoise mat from Paris/All-England
-     - 🪵 **Timber**: Tournament maple hardwood parquet with wood grain overlay
-     - 🌑 **Midnight**: Obsidian carbon mat with glowing cyan lines
-   - **Realistic 3D Net**:
-     - Dual steel net posts on doubles sidelines with tension wheels.
-     - 75mm white vinyl cord tape, dark woven mesh weave, and projected 3D shadow.
-     - Center net height measurement badge (1.524m).
-   - **Player Tokens & Serving HUD**:
-     - 3D avatar tokens with team/player color halos, metallic bezels, and drop shadows.
-     - Active server badge with golden 🏸 shuttlecock icon.
-     - Tap any player or click "Switch Server" to reassign the serve.
-     - **Flip Ends**: One-tap court rotation button to switch ends (Side A ↔ Side B).
+4. **Court Score Marking & Large Center Scoreboard (`/game/:gameId/court`)**:
+   - **Tap-to-Score on Court Sides**:
+     - Tap anywhere on Side A (Top in portrait / Left in landscape) awards `+1` point to Side A.
+     - Tap anywhere on Side B (Bottom in portrait / Right in landscape) awards `+1` point to Side B.
+     - Automatically accounts for "Flip Ends" (Side 1 vs Side 2).
+     - Flash wave animation on tapped court half with subtle haptic vibration.
+   - **Large Center Scoreboard**:
+     - Positioned right in the center of the page over the net with stadium acrylic styling.
+     - Large digital digits (`text-5xl sm:text-7xl font-mono`) styled with respective player/team colors.
+     - Live team names & color dot badges.
+     - Floating `+1` / `-1` point pop animation.
+   - **Undo up to Last 1 Point**:
+     - `↩ Undo Last Pt` button activates whenever a point is scored.
+     - Clicking reverts the score by 1 point and then locks until another point is added.
+     - `↺ Reset` button to reset to `0 - 0`.
+5. **Adaptive Landscape & Portrait Badminton Court**:
+   - Automatic detection: Landscape on widescreen (`1340 × 610`), Portrait on tall screens (`610 × 1340`).
+   - Manual Orientation button (`Auto / Landscape / Portrait`).
+   - BWF 0.76m Back Boxes, 4 themes, 3D net with posts, and serving HUD.
 
 ---
 
@@ -122,9 +116,8 @@ shuttle-score/
 ---
 
 ## 📋 Ready for Next Phase
-1. **Live Scoring Engine**:
-   - Tap-to-score / swipe gestures or large score counter digits.
-   - Server & receiver rotation logic following official BWF rules (odd/even service courts).
-   - Game & match point detection, deuce (first to 2-point lead or capped at 30).
-   - Undo/redo stack.
+1. **Match Rules Engine**:
+   - Standard 21-point game, deuce logic (up to 30), best of 3 games.
+   - Automatic server & receiver rotation following odd/even service box rules.
+   - Game point / Match point announcements.
 2. **Capacitor Integration**: Generate Android studio project & build APK for Play Store release.
