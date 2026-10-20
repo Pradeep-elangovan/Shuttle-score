@@ -307,7 +307,6 @@ export default function CourtPage() {
           orientation={effectiveOrientation}
           isFlipped={isFlipped}
           servingPlayerId={servingPlayerId}
-          onSelectServer={(id) => setServingPlayerId(id)}
           onScoreSide={handleScoreSide}
           activeTapSide={activeTapSide}
         />

@@ -13,7 +13,6 @@ interface BadmintonCourtProps {
   orientation?: CourtOrientation
   isFlipped?: boolean
   servingPlayerId?: string | null
-  onSelectServer?: (playerId: string) => void
   onScoreSide?: (side: 'side1' | 'side2') => void
   activeTapSide?: 'side1' | 'side2' | null
 }
@@ -72,7 +71,6 @@ export default function BadmintonCourt({
   orientation = 'portrait',
   isFlipped = false,
   servingPlayerId,
-  onSelectServer,
   onScoreSide,
   activeTapSide,
 }: BadmintonCourtProps) {
@@ -124,7 +122,6 @@ export default function BadmintonCourt({
     x: number
     y: number
     radius: number
-    roleLabel: string
   }
 
   const courtPlayers: CourtPlayer[] = []
@@ -140,7 +137,6 @@ export default function BadmintonCourt({
           x: leftCenterServiceX,
           y: fullBreadth / 2,
           radius: 46,
-          roleLabel: isFlipped ? 'Side B' : 'Side A',
         })
       }
       if (side2Players[0]) {
@@ -149,7 +145,6 @@ export default function BadmintonCourt({
           x: rightCenterServiceX,
           y: fullBreadth / 2,
           radius: 46,
-          roleLabel: isFlipped ? 'Side A' : 'Side B',
         })
       }
     } else {
@@ -159,7 +154,6 @@ export default function BadmintonCourt({
           x: leftCenterServiceX,
           y: fullBreadth * 0.73,
           radius: 40,
-          roleLabel: 'Right',
         })
       }
       if (side1Players[1]) {
@@ -168,7 +162,6 @@ export default function BadmintonCourt({
           x: leftCenterServiceX,
           y: fullBreadth * 0.27,
           radius: 40,
-          roleLabel: 'Left',
         })
       }
 
@@ -178,7 +171,6 @@ export default function BadmintonCourt({
           x: rightCenterServiceX,
           y: fullBreadth * 0.27,
           radius: 40,
-          roleLabel: 'Left',
         })
       }
       if (side2Players[1]) {
@@ -187,7 +179,6 @@ export default function BadmintonCourt({
           x: rightCenterServiceX,
           y: fullBreadth * 0.73,
           radius: 40,
-          roleLabel: 'Right',
         })
       }
     }
@@ -202,7 +193,6 @@ export default function BadmintonCourt({
           x: fullBreadth / 2,
           y: topCenterServiceY,
           radius: 46,
-          roleLabel: isFlipped ? 'Side B' : 'Side A',
         })
       }
       if (side2Players[0]) {
@@ -211,7 +201,6 @@ export default function BadmintonCourt({
           x: fullBreadth / 2,
           y: bottomCenterServiceY,
           radius: 46,
-          roleLabel: isFlipped ? 'Side A' : 'Side B',
         })
       }
     } else {
@@ -221,7 +210,6 @@ export default function BadmintonCourt({
           x: fullBreadth * 0.26,
           y: topCenterServiceY,
           radius: 40,
-          roleLabel: 'Right',
         })
       }
       if (side1Players[1]) {
@@ -230,7 +218,6 @@ export default function BadmintonCourt({
           x: fullBreadth * 0.74,
           y: topCenterServiceY,
           radius: 40,
-          roleLabel: 'Left',
         })
       }
 
@@ -240,7 +227,6 @@ export default function BadmintonCourt({
           x: fullBreadth * 0.26,
           y: bottomCenterServiceY,
           radius: 40,
-          roleLabel: 'Left',
         })
       }
       if (side2Players[1]) {
@@ -249,7 +235,6 @@ export default function BadmintonCourt({
           x: fullBreadth * 0.74,
           y: bottomCenterServiceY,
           radius: 40,
-          roleLabel: 'Right',
         })
       }
     }
@@ -499,11 +484,10 @@ export default function BadmintonCourt({
         )}
 
         {/* ======================================================== */}
-        {/* 3. SHADED TRAMLINES & ZONES (CLEAN, NO TEXT)             */}
+        {/* 3. SHADED TRAMLINES & ZONES                              */}
         {/* ======================================================== */}
         {isLandscape ? (
           <>
-            {/* Singles Tramlines (Top & Bottom in landscape) */}
             {mode === 'singles' && (
               <>
                 <rect x="0" y="0" width={courtW} height={sideAlleyWidth} fill="rgba(0,0,0,0.22)" pointerEvents="none" />
@@ -511,7 +495,6 @@ export default function BadmintonCourt({
               </>
             )}
 
-            {/* Neutral Net Zone */}
             <rect
               x={netPosition - shortServiceLineDist}
               y="0"
@@ -523,7 +506,6 @@ export default function BadmintonCourt({
           </>
         ) : (
           <>
-            {/* Singles Tramlines (Left & Right in portrait) */}
             {mode === 'singles' && (
               <>
                 <rect x="0" y="0" width={sideAlleyWidth} height={courtH} fill="rgba(0,0,0,0.22)" pointerEvents="none" />
@@ -531,7 +513,6 @@ export default function BadmintonCourt({
               </>
             )}
 
-            {/* Neutral Net Zone */}
             <rect
               x="0"
               y={netPosition - shortServiceLineDist}
@@ -544,9 +525,8 @@ export default function BadmintonCourt({
         )}
 
         {/* ======================================================== */}
-        {/* 4. OFFICIAL BWF REGULATION COURT LINES (PRISTINE)        */}
+        {/* 4. OFFICIAL BWF REGULATION COURT LINES                   */}
         {/* ======================================================== */}
-        {/* Outer Boundary Box */}
         <rect
           x="0"
           y="0"
@@ -561,7 +541,7 @@ export default function BadmintonCourt({
 
         {isLandscape ? (
           <>
-            {/* Singles Sidelines (Horizontal at y = 46 and y = 564) */}
+            {/* Singles Sidelines */}
             <line
               x1="0"
               y1={sideAlleyWidth}
@@ -581,7 +561,7 @@ export default function BadmintonCourt({
               opacity={mode === 'singles' ? 1 : 0.6}
             />
 
-            {/* Short Service Lines (Vertical at x = 472 and x = 868) */}
+            {/* Short Service Lines */}
             <line
               x1={netPosition - shortServiceLineDist}
               y1="0"
@@ -599,7 +579,7 @@ export default function BadmintonCourt({
               strokeWidth="3.5"
             />
 
-            {/* Doubles Long Service Lines / Back Box Lines (Vertical at x = 76 and x = 1264) */}
+            {/* Doubles Long Service Lines */}
             <line
               x1={backBoxDepth}
               y1="0"
@@ -619,7 +599,7 @@ export default function BadmintonCourt({
               opacity={mode === 'doubles' ? 1 : 0.75}
             />
 
-            {/* Center Line (Horizontal at y = 305, terminates at short service lines) */}
+            {/* Center Line */}
             <line
               x1="0"
               y1={courtH / 2}
@@ -639,7 +619,7 @@ export default function BadmintonCourt({
           </>
         ) : (
           <>
-            {/* Singles Sidelines (Vertical at x = 46 and x = 564) */}
+            {/* Singles Sidelines */}
             <line
               x1={sideAlleyWidth}
               y1="0"
@@ -659,7 +639,7 @@ export default function BadmintonCourt({
               opacity={mode === 'singles' ? 1 : 0.6}
             />
 
-            {/* Short Service Lines (Horizontal at y = 472 and y = 868) */}
+            {/* Short Service Lines */}
             <line
               x1="0"
               y1={netPosition - shortServiceLineDist}
@@ -677,7 +657,7 @@ export default function BadmintonCourt({
               strokeWidth="3.5"
             />
 
-            {/* Doubles Long Service Lines (Horizontal at y = 76 and y = 1264) */}
+            {/* Doubles Long Service Lines */}
             <line
               x1="0"
               y1={backBoxDepth}
@@ -697,7 +677,7 @@ export default function BadmintonCourt({
               opacity={mode === 'doubles' ? 1 : 0.75}
             />
 
-            {/* Center Line (Vertical at x = 305, terminates at short service lines) */}
+            {/* Center Line */}
             <line
               x1={courtW / 2}
               y1="0"
@@ -943,32 +923,28 @@ export default function BadmintonCourt({
         )}
 
         {/* ======================================================== */}
-        {/* 8. PLAYER TOKENS & SERVING BADGES                        */}
+        {/* 8. PLAYER TOKENS (POINTER-EVENTS-NONE: NOT TOUCH POINTS) */}
         {/* ======================================================== */}
         {courtPlayers.map((cp) => {
-          const { player, x, y, radius, roleLabel } = cp
+          const { player, x, y, radius } = cp
           const isServing = activeServer?.player.id === player.id
           const initials = getInitials(player.name, 'P')
-          const pillWidth = Math.max(90, Math.min(150, (player.name.length || 6) * 10 + 36))
+          const pillWidth = Math.max(80, Math.min(140, (player.name.length || 6) * 10 + 24))
 
           return (
             <g
               key={player.id}
-              onClick={(e) => {
-                e.stopPropagation()
-                onSelectServer?.(player.id)
-              }}
-              className="cursor-pointer transition-transform hover:scale-105"
+              className="pointer-events-none"
               filter={`url(#tokenShadow-${uniqueId})`}
             >
               {isServing && (
                 <circle
                   cx={x}
                   cy={y}
-                  r={radius + 9}
+                  r={radius + 8}
                   fill="none"
                   stroke="#fbbf24"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   strokeDasharray="6 4"
                   className="animate-spin"
                   style={{ transformOrigin: `${x}px ${y}px`, animationDuration: '8s' }}
@@ -998,15 +974,7 @@ export default function BadmintonCourt({
                 r={radius}
                 fill="none"
                 stroke={isServing ? '#fbbf24' : player.color}
-                strokeWidth="4.5"
-              />
-              <circle
-                cx={x}
-                cy={y}
-                r={radius - 3}
-                fill="none"
-                stroke="rgba(255,255,255,0.4)"
-                strokeWidth="1.5"
+                strokeWidth="4"
               />
 
               {!player.avatar && (
@@ -1019,60 +987,35 @@ export default function BadmintonCourt({
                   fontSize={radius > 42 ? '24' : '20'}
                   fontWeight="bold"
                   letterSpacing="0.04em"
-                  pointerEvents="none"
                   style={{ textShadow: '0 2px 4px rgba(0,0,0,0.6)' }}
                 >
                   {initials}
                 </text>
               )}
 
-              {isServing && (
-                <g transform={`translate(${x + radius - 4}, ${y - radius + 4})`}>
-                  <circle cx="0" cy="0" r="13" fill="#fbbf24" stroke="#ffffff" strokeWidth="2" />
-                  <text x="0" y="3.5" textAnchor="middle" fill="#0f172a" fontSize="11" fontWeight="bold">
-                    🏸
-                  </text>
-                </g>
-              )}
-
-              <g transform={`translate(${x}, ${y + radius + 18})`}>
+              {/* Clean Name Badge (No colored dot / touch points) */}
+              <g transform={`translate(${x}, ${y + radius + 16})`}>
                 <rect
                   x={-pillWidth / 2}
                   y="-12"
                   width={pillWidth}
-                  height="25"
-                  rx="12.5"
+                  height="24"
+                  rx="12"
                   fill="#0f172a"
                   fillOpacity="0.95"
-                  stroke={isServing ? '#fbbf24' : player.color}
+                  stroke={player.color}
                   strokeWidth="1.5"
                 />
-                <circle cx={-pillWidth / 2 + 10} cy="0.5" r="4" fill={isServing ? '#fbbf24' : player.color} />
                 <text
-                  x="4"
+                  x="0"
                   y="1.5"
                   textAnchor="middle"
                   dominantBaseline="central"
                   fill="white"
                   fontSize="12"
                   fontWeight="bold"
-                  pointerEvents="none"
                 >
                   {player.name || 'Player'}
-                </text>
-              </g>
-
-              <g transform={`translate(${x}, ${y + radius + 38})`}>
-                <text
-                  x="0"
-                  y="0"
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.7)"
-                  fontSize="10"
-                  fontWeight="600"
-                  letterSpacing="0.05em"
-                >
-                  {isServing ? '★ SERVING' : roleLabel}
                 </text>
               </g>
             </g>

@@ -9,7 +9,7 @@
 - **App Name:** Shuttle Score
 - **GitHub Repository:** [https://github.com/Pradeep-elangovan/Shuttle-score](https://github.com/Pradeep-elangovan/Shuttle-score)
 - **Local Directory:** `D:\My Works\Development\shuttle-score`
-- **Goal:** Mobile & tablet-first scoreboard web app with an adaptive landscape/portrait clean court UI, tap-to-score marking, central broadcast scoreboard, and 1-point undo. Intended to be wrapped and distributed as an Android APK (via Capacitor) on the Google Play Store. Future roadmap includes scaling to other racket/ball sports.
+- **Goal:** Mobile & tablet-first scoreboard web app with an adaptive landscape/portrait clean court UI, tap-to-score marking on entire court sides without avatar touch interception, central broadcast scoreboard, and 1-point undo. Intended to be wrapped and distributed as an Android APK (via Capacitor) on the Google Play Store. Future roadmap includes scaling to other racket/ball sports.
 
 ---
 
@@ -31,7 +31,7 @@
 flowchart TD
     A["🏠 HomePage ('/')\nSelect Game: Badminton active, others upcoming"] --> B["🎮 GameModePage ('/game/:gameId/mode')\nChoose Singles (1v1) or Doubles (2v2)"]
     B --> C["📝 PlayerSetupPage ('/game/:gameId/players')\n• Singles: 2 players, custom color picker & photo upload per player\n• Doubles: Team A & B color pickers, photo upload per player"]
-    C --> D["🏸 CourtPage ('/game/:gameId/court')\n• Pristine Court: Clean BWF boundary lines, no text guides\n• Tap court side to score: Side A (+1) / Side B (+1)\n• Large Central Scoreboard: Frosted acrylic stadium HUD with digital digits\n• Undo up to last 1 point (↩ Undo Last Pt)\n• Adaptive Orientation: Landscape on widescreen, Portrait on tall screens\n• 4 Themes: Emerald, Olympic Blue, Timber Hardwood, Midnight\n• 3D Net, Serving HUD, Flip Ends"]
+    C --> D["🏸 CourtPage ('/game/:gameId/court')\n• Entire court side is touch-enabled for scoring (avatars pass-through touches)\n• Large Central Scoreboard: Frosted acrylic stadium HUD with digital digits\n• Undo up to last 1 point (↩ Undo Last Pt)\n• Adaptive Orientation: Landscape on widescreen, Portrait on tall screens\n• 4 Themes: Emerald, Olympic Blue, Timber Hardwood, Midnight\n• Clean BWF court without text guides or touch point dots"]
 ```
 
 ---
@@ -57,7 +57,7 @@ shuttle-score/
     │   ├── PlayerSetupPage.tsx        # Player details form with ColorPicker & PlayerAvatarUpload
     │   └── CourtPage.tsx              # Clean Court view with Tap-to-Score, Large Central Scoreboard & 1-Point Undo
     ├── components/
-    │   ├── BadmintonCourt.tsx         # Pristine SVG court without text guides: Tap zones, 4 themes, 3D net, player tokens
+    │   ├── BadmintonCourt.tsx         # Pristine SVG court without text guides or avatar touch interceptors
     │   ├── ColorPicker.tsx            # 8 vibrant preset swatches + native HTML5 color picker
     │   ├── PlayerAvatarUpload.tsx     # Photo uploader with preview, canvas resize & remove button
     │   └── icons/
@@ -79,7 +79,9 @@ shuttle-score/
    - **Doubles**: Team A & Team B color pickers, individual photo uploader, Name, Gender, and DOB for each of the 4 players.
    - Client-side image compression keeps photos lightweight (~30KB JPEG).
 4. **Court Score Marking & Large Center Scoreboard (`/game/:gameId/court`)**:
-   - **Clean Court (All Text Guides Removed)**: Pure, pristine playing mat with official boundary lines and zero text clutter.
+   - **Clean Court & Non-Interfering Avatars**:
+     - Player avatars now have `pointer-events-none`, meaning touches anywhere on or around the avatar directly register as a score for that side.
+     - Removed the colored dot / touch point indicator and role labels from both avatars.
    - **Tap-to-Score on Court Sides**:
      - Tap anywhere on Side A (Top in portrait / Left in landscape) awards `+1` point to Side A.
      - Tap anywhere on Side B (Bottom in portrait / Right in landscape) awards `+1` point to Side B.
