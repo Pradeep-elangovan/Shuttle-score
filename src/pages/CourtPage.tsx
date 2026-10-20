@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { ArrowLeft, RotateCcw, ArrowUpDown, Eye, EyeOff, Layers } from 'lucide-react'
-import BadmintonCourt, { type CourtTheme } from '../components/BadmintonCourt'
+import { ArrowLeft, RotateCcw, ArrowUpDown, Eye, EyeOff, Layers, Smartphone, Monitor } from 'lucide-react'
+import BadmintonCourt, { type CourtTheme, type CourtOrientation } from '../components/BadmintonCourt'
 import type { PlayerInfo, TeamColors } from './PlayerSetupPage'
 
 const THEMES: { id: CourtTheme; name: string; dot: string }[] = [
@@ -25,13 +25,42 @@ export default function CourtPage() {
   const players = state?.players ?? []
   const teamColors = state?.teamColors
 
-  // Court state
+  // Court custom state
   const [theme, setTheme] = useState<CourtTheme>('emerald')
   const [showGuides, setShowGuides] = useState(true)
   const [isFlipped, setIsFlipped] = useState(false)
   const [servingPlayerId, setServingPlayerId] = useState<string | null>(
     players[0]?.id || null
   )
+
+  // Responsive Orientation Detection (Width > Height => Landscape, Height >= Width => Portrait)
+  const [detectedLandscape, setDetectedLandscape] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth > window.innerHeight
+  })
+  const [manualOverride, setManualOverride] = useState<'auto' | 'portrait' | 'landscape'>('auto')
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDetectedLandscape(window.innerWidth > window.innerHeight)
+    }
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('orientationchange', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('orientationchange', handleResize)
+    }
+  }, [])
+
+  // Effective orientation: defaults to auto-detected aspect ratio
+  const effectiveOrientation: CourtOrientation =
+    manualOverride === 'auto'
+      ? detectedLandscape
+        ? 'landscape'
+        : 'portrait'
+      : manualOverride
+
+  const isLandscape = effectiveOrientation === 'landscape'
 
   const activeServer = players.find((p) => p.id === servingPlayerId) || players[0]
 
@@ -42,8 +71,18 @@ export default function CourtPage() {
     setServingPlayerId(players[nextIndex].id)
   }
 
+  const toggleOrientationOverride = () => {
+    if (manualOverride === 'auto') {
+      setManualOverride(detectedLandscape ? 'portrait' : 'landscape')
+    } else if (manualOverride === 'landscape') {
+      setManualOverride('portrait')
+    } else {
+      setManualOverride('auto')
+    }
+  }
+
   return (
-    <div className="h-full flex flex-col page-enter bg-bg overflow-hidden">
+    <div className="h-full w-full flex flex-col page-enter bg-bg overflow-hidden">
       {/* Top action header */}
       <header className="flex items-center justify-between px-4 pt-3 pb-2 z-10 shrink-0">
         <button
@@ -62,7 +101,7 @@ export default function CourtPage() {
             </span>
           </div>
           <p className="text-[10px] text-slate-400 capitalize">
-            {players.length} Players Configured
+            {players.length} Players • {isLandscape ? 'Landscape (Widescreen)' : 'Portrait'}
           </p>
         </div>
 
@@ -99,6 +138,21 @@ export default function CourtPage() {
 
         {/* Tactical Actions */}
         <div className="flex items-center gap-1.5">
+          {/* Orientation Mode Toggle */}
+          <button
+            onClick={toggleOrientationOverride}
+            className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-semibold flex items-center gap-1 tap-scale cursor-pointer transition-colors ${
+              manualOverride !== 'auto'
+                ? 'bg-primary/20 border-primary/50 text-primary-light'
+                : 'bg-surface/90 border-slate-700/60 text-slate-300 hover:bg-slate-700'
+            }`}
+            title={`Orientation: ${manualOverride} (Click to toggle)`}
+          >
+            {isLandscape ? <Monitor className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
+            {isLandscape ? 'Landscape' : 'Portrait'}
+            {manualOverride !== 'auto' && <span className="text-[9px] opacity-75 font-mono">• Lock</span>}
+          </button>
+
           {/* Switch Ends */}
           <button
             onClick={() => setIsFlipped(!isFlipped)}
@@ -107,7 +161,7 @@ export default function CourtPage() {
                 ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
                 : 'bg-surface/90 border-slate-700/60 text-slate-300 hover:bg-slate-700'
             }`}
-            title="Switch court ends (Side A ↔ Side B)"
+            title="Switch court ends"
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
             Flip
@@ -156,12 +210,13 @@ export default function CourtPage() {
       )}
 
       {/* Court Interactive Canvas */}
-      <main className="flex-1 flex items-center justify-center px-2 pb-2 overflow-hidden relative">
+      <main className="flex-1 w-full flex items-center justify-center p-2 overflow-hidden relative">
         <BadmintonCourt
           mode={mode}
           players={players}
           teamColors={teamColors}
           theme={theme}
+          orientation={effectiveOrientation}
           showGuides={showGuides}
           isFlipped={isFlipped}
           servingPlayerId={servingPlayerId}

@@ -6,11 +6,32 @@ import CourtPage from './pages/CourtPage'
 
 export default function App() {
   return (
-    <div className="h-full w-full max-w-lg mx-auto relative overflow-hidden">
+    <div className="h-full w-full relative overflow-hidden bg-bg">
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/game/:gameId/mode" element={<GameModePage />} />
-        <Route path="/game/:gameId/players" element={<PlayerSetupPage />} />
+        <Route
+          path="/"
+          element={
+            <div className="h-full w-full max-w-lg mx-auto">
+              <HomePage />
+            </div>
+          }
+        />
+        <Route
+          path="/game/:gameId/mode"
+          element={
+            <div className="h-full w-full max-w-lg mx-auto">
+              <GameModePage />
+            </div>
+          }
+        />
+        <Route
+          path="/game/:gameId/players"
+          element={
+            <div className="h-full w-full max-w-lg mx-auto">
+              <PlayerSetupPage />
+            </div>
+          }
+        />
         <Route path="/game/:gameId/court" element={<CourtPage />} />
       </Routes>
     </div>
