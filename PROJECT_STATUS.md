@@ -9,7 +9,7 @@
 - **App Name:** Shuttle Score
 - **GitHub Repository:** [https://github.com/Pradeep-elangovan/Shuttle-score](https://github.com/Pradeep-elangovan/Shuttle-score)
 - **Local Directory:** `D:\My Works\Development\shuttle-score`
-- **Goal:** Mobile & tablet-first scoreboard web app with an interactive court UI, intended to be wrapped and distributed as an Android APK (via Capacitor) on the Google Play Store. Future roadmap includes scaling to other racket/ball sports.
+- **Goal:** Mobile & tablet-first scoreboard web app with a tournament-grade interactive court UI, intended to be wrapped and distributed as an Android APK (via Capacitor) on the Google Play Store. Future roadmap includes scaling to other racket/ball sports.
 
 ---
 
@@ -31,7 +31,7 @@
 flowchart TD
     A["🏠 HomePage ('/')\nSelect Game: Badminton active, others upcoming"] --> B["🎮 GameModePage ('/game/:gameId/mode')\nChoose Singles (1v1) or Doubles (2v2)"]
     B --> C["📝 PlayerSetupPage ('/game/:gameId/players')\n• Singles: 2 players, custom color picker & photo upload per player\n• Doubles: Team A & B color pickers, photo upload per player"]
-    C --> D["🏸 CourtPage ('/game/:gameId/court')\n• Interactive SVG Court with accurate BWF dimensions\n• Player photos or initials in colored rings on court\n• Team A / B banners & ambient side tinting matching chosen colors\n• Interactive zones"]
+    C --> D["🏸 CourtPage ('/game/:gameId/court')\n• BWF Regulation 13.4m × 6.1m Stadium Court\n• 4 Themes: Emerald, Olympic Blue, Timber Hardwood, Midnight\n• Realistic 3D Net with Steel Posts, 75mm Tape & Shadows\n• Odd/Even Service Box Guides & Non-Service 1.98m Zone\n• Active Server HUD with 🏸 Gold Shuttlecock Badge\n• Flip Ends (Switch Sides) & Guide Toggle"]
 ```
 
 ---
@@ -55,9 +55,9 @@ shuttle-score/
     │   ├── HomePage.tsx               # Game card selector (Badminton available; TT, Tennis, Volleyball 'Soon')
     │   ├── GameModePage.tsx           # Singles (1v1) & Doubles (2v2) mode cards
     │   ├── PlayerSetupPage.tsx        # Player details form with ColorPicker & PlayerAvatarUpload
-    │   └── CourtPage.tsx              # Court wrapper with top action bar, mode label, settings/reset icon
+    │   └── CourtPage.tsx              # Court wrapper with Theme Switcher, Flip Ends, Guide Toggle & Serving HUD
     ├── components/
-    │   ├── BadmintonCourt.tsx         # SVG court with player avatars, color rings, side tints, interactive zones
+    │   ├── BadmintonCourt.tsx         # Tournament-grade SVG court, 4 themes, 3D net, BWF service boxes, player tokens
     │   ├── ColorPicker.tsx            # 8 vibrant preset swatches + native HTML5 color picker
     │   ├── PlayerAvatarUpload.tsx     # Photo uploader with preview, canvas resize & remove button
     │   └── icons/
@@ -75,22 +75,33 @@ shuttle-score/
 2. **Game Mode Screen (`/game/:gameId/mode`)**:
    - Clean card selection for Singles (1 vs 1) and Doubles (2 vs 2).
 3. **Player Details Form (`/game/:gameId/players`)**:
-   - **Singles**:
-     - 2 players with individual color picker (8 sports presets + custom picker).
-     - Individual photo uploader with preview, live camera capture, and remove option.
-     - Name, Gender toggle pills (`Male ♂`, `Female ♀`, `Other ⚧`), and Date of Birth validation.
-   - **Doubles**:
-     - Team A header with Team A color picker (applies to Player 1 & 2).
-     - Team B header with Team B color picker (applies to Player 3 & 4).
-     - Individual photo uploader, Name, Gender, and DOB for each of the 4 players.
+   - **Singles**: 2 players with individual color picker (8 sports presets + custom picker) & photo uploader.
+   - **Doubles**: Team A & Team B color pickers, individual photo uploader, Name, Gender, and DOB for each of the 4 players.
    - Client-side image compression keeps photos lightweight (~30KB JPEG).
-4. **Interactive Badminton Court (`/game/:gameId/court`)**:
-   - Accurate BWF dimensions rendered via scalable SVG (`viewBox`).
-   - **Singles**: Player 1 centered on top side, Player 2 centered on bottom side with circular avatar images (or initials), border rings in assigned color, and name pill badges.
-   - **Doubles**: Team A (Players 1 & 2) placed on top service courts; Team B (Players 3 & 4) placed on bottom service courts with team colors, rings, and team banners.
-   - **Side Ambient Tints**: Top half subtly tinted with Side A / Team A color; bottom half tinted with Side B / Team B color.
-   - Singles vs Doubles court lines dynamically toggled (tramlines dimmed in singles, doubles long service lines rendered in doubles).
-   - Tap-to-inspect on 8 individual court zones and player markers.
+4. **Tournament-Grade Badminton Court (`/game/:gameId/court`)**:
+   - **Realistic Stadium Apron**: Outer arena run-off perimeter with stadium guidelines and BWF regulation title banner.
+   - **4 Authentic Court Themes**:
+     - 🟢 **Emerald**: Classic Yonex BWF World Tour green mat
+     - 🔵 **Olympic**: Deep ocean turquoise mat from Paris/All-England
+     - 🪵 **Timber**: Tournament maple hardwood parquet with wood grain overlay
+     - 🌑 **Midnight**: Obsidian carbon mat with glowing cyan lines
+   - **BWF Line Accuracy**:
+     - Center line correctly terminates at short service lines (neutral 1.98m net zone has no center line).
+     - Tramlines dimmed in singles, doubles back service alleys shaded in doubles.
+   - **Realistic 3D Net**:
+     - Dual steel net posts on doubles sidelines with tension wheels.
+     - 75mm white vinyl cord tape, dark woven mesh weave, and projected 3D shadow.
+     - Center net height measurement badge (1.524m).
+   - **Tactical Guides & Markings**:
+     - Even/Odd service box indicators (Right = Even, Left = Odd).
+     - 1.98m non-service zone labels.
+     - Doubles 0.76m back alley labels.
+     - Interactive service court sector taps.
+   - **Player Tokens & Serving HUD**:
+     - 3D avatar tokens with team/player color halos, metallic bezels, and drop shadows.
+     - Active server badge with golden 🏸 shuttlecock icon.
+     - Tap any player or click "Switch Server" to reassign the serve.
+     - **Flip Ends**: One-tap court rotation button to switch ends (Side A ↔ Side B).
 
 ---
 
@@ -101,6 +112,7 @@ shuttle-score/
   npm run dev
   ```
 - **Local URL:** `http://localhost:5173`
+- **Network URL (Mobile test):** Check terminal output (e.g. `http://192.168.x.x:5173`)
 - **Build Verification:**
   ```powershell
   npm run build
@@ -110,7 +122,7 @@ shuttle-score/
 
 ## 📋 Ready for Next Phase
 1. **Live Scoring Engine**:
-   - Point increment / decrement (e.g. tap player / court half or large score counters).
+   - Tap-to-score / swipe gestures or large score counter digits.
    - Server & receiver rotation logic following official BWF rules (odd/even service courts).
    - Game & match point detection, deuce (first to 2-point lead or capped at 30).
    - Undo/redo stack.
