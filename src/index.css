@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* Custom theme tokens */
+@theme {
+  --color-court-green: #2d8a4e;
+  --color-court-green-light: #3ca85e;
+  --color-court-line: #ffffff;
+  --color-primary: #6366f1;
+  --color-primary-light: #818cf8;
+  --color-surface: #1e293b;
+  --color-surface-light: #334155;
+  --color-bg: #0f172a;
+  --color-accent: #f59e0b;
+}
+
+/* Mobile-first base styles */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  color: white;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Smooth page transitions */
+.page-enter {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.page-exit {
+  animation: slideOut 0.2s ease-in;
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+/* Tap feedback */
+.tap-scale {
+  transition: transform 0.1s ease;
+}
+.tap-scale:active {
+  transform: scale(0.96);
+}
+
+/* Shuttle animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(5deg); }
+}
+
+.shuttle-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Court line glow effect */
+.court-line-glow {
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+}
