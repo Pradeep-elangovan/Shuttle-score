@@ -31,7 +31,7 @@
 flowchart TD
     A["🏠 HomePage ('/')\nSelect Game: Badminton active, others upcoming"] --> B["🎮 GameModePage ('/game/:gameId/mode')\nChoose Singles (1v1) or Doubles (2v2)"]
     B --> C["📝 PlayerSetupPage ('/game/:gameId/players')\n• Singles: 2 players, custom color picker & photo upload per player\n• Doubles: Team A & B color pickers, photo upload per player"]
-    C --> D["🏸 CourtPage ('/game/:gameId/court')\n• BWF Regulation 13.4m × 6.1m Stadium Court\n• 4 Themes: Emerald, Olympic Blue, Timber Hardwood, Midnight\n• Realistic 3D Net with Steel Posts, 75mm Tape & Shadows\n• Odd/Even Service Box Guides & Non-Service 1.98m Zone\n• Active Server HUD with 🏸 Gold Shuttlecock Badge\n• Flip Ends (Switch Sides) & Guide Toggle"]
+    C --> D["🏸 CourtPage ('/game/:gameId/court')\n• BWF Regulation 13.4m × 6.1m Stadium Court\n• 4 Themes: Emerald, Olympic Blue, Timber Hardwood, Midnight\n• Prominent 0.76m Back Boxes on both ends with Singles/Doubles rules\n• Realistic 3D Net with Steel Posts, 75mm Tape & Shadows\n• Odd/Even Service Box Guides & Non-Service 1.98m Zone\n• Active Server HUD with 🏸 Gold Shuttlecock Badge\n• Flip Ends (Switch Sides) & Guide Toggle"]
 ```
 
 ---
@@ -57,7 +57,7 @@ shuttle-score/
     │   ├── PlayerSetupPage.tsx        # Player details form with ColorPicker & PlayerAvatarUpload
     │   └── CourtPage.tsx              # Court wrapper with Theme Switcher, Flip Ends, Guide Toggle & Serving HUD
     ├── components/
-    │   ├── BadmintonCourt.tsx         # Tournament-grade SVG court, 4 themes, 3D net, BWF service boxes, player tokens
+    │   ├── BadmintonCourt.tsx         # Tournament-grade SVG court, 4 themes, 3D net, BWF service boxes, Back Boxes, player tokens
     │   ├── ColorPicker.tsx            # 8 vibrant preset swatches + native HTML5 color picker
     │   ├── PlayerAvatarUpload.tsx     # Photo uploader with preview, canvas resize & remove button
     │   └── icons/
@@ -79,15 +79,17 @@ shuttle-score/
    - **Doubles**: Team A & Team B color pickers, individual photo uploader, Name, Gender, and DOB for each of the 4 players.
    - Client-side image compression keeps photos lightweight (~30KB JPEG).
 4. **Tournament-Grade Badminton Court (`/game/:gameId/court`)**:
-   - **Realistic Stadium Apron**: Outer arena run-off perimeter with stadium guidelines and BWF regulation title banner.
+   - **Prominent 0.76m Back Boxes (Rear Gallery)**:
+     - The doubles long service line (`y = 76` and `y = 1264`) is **always drawn** on both ends in all modes.
+     - Divided by the center line into Left Back Box and Right Back Box.
+     - **In Doubles**: Displays `BACK BOX (0.76M) • OUT ON SERVE` with diagonal hazard/warning striping.
+     - **In Singles**: Displays `BACK BOX (0.76M) • IN`.
+     - **Interactive**: Tapping any back box displays a rule explainer card.
    - **4 Authentic Court Themes**:
      - 🟢 **Emerald**: Classic Yonex BWF World Tour green mat
      - 🔵 **Olympic**: Deep ocean turquoise mat from Paris/All-England
      - 🪵 **Timber**: Tournament maple hardwood parquet with wood grain overlay
      - 🌑 **Midnight**: Obsidian carbon mat with glowing cyan lines
-   - **BWF Line Accuracy**:
-     - Center line correctly terminates at short service lines (neutral 1.98m net zone has no center line).
-     - Tramlines dimmed in singles, doubles back service alleys shaded in doubles.
    - **Realistic 3D Net**:
      - Dual steel net posts on doubles sidelines with tension wheels.
      - 75mm white vinyl cord tape, dark woven mesh weave, and projected 3D shadow.
@@ -95,7 +97,6 @@ shuttle-score/
    - **Tactical Guides & Markings**:
      - Even/Odd service box indicators (Right = Even, Left = Odd).
      - 1.98m non-service zone labels.
-     - Doubles 0.76m back alley labels.
      - Interactive service court sector taps.
    - **Player Tokens & Serving HUD**:
      - 3D avatar tokens with team/player color halos, metallic bezels, and drop shadows.
